@@ -1,4 +1,4 @@
-const { adiciona } = require("./manipula-blocklist");
+const { adiciona } = require("./blocklist-access-token");
 const {promisify} = require('util')
 module.exports = (lista) => {
 
