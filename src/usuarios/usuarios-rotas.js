@@ -10,6 +10,7 @@ module.exports = (app) => {
     .route("/usuario/login")
     .post(middlewaresAutenticacao.local, usuariosControlador.login);
 
+    
   app
     .route("/usuario/logout")
     .post(
