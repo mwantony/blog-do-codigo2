@@ -1,9 +1,7 @@
 const passport = require("passport");
 const Usuario = require("./usuarios-modelo");
 
-const tokens = require('./tokens')
-
-
+const tokens = require("./tokens");
 
 module.exports = {
   local(req, res, next) {
@@ -72,5 +70,11 @@ module.exports = {
       }
       return res.status(500).json({ error: error.message });
     }
+  },
+  async verificacaoEmail(req, res, next) {
+    const {id} = req.params
+    const usuario = await Usuario.buscaPorId(id)
+    req.user = usuario
+    next()
   },
 };
