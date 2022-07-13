@@ -1,15 +1,14 @@
-const allowlistRefreshToken = require("../../redis/allowlist-refresh-token");
-const jwt = require("jsonwebtoken");
-const crypto = require("crypto");
-const moment = require("moment");
-const blocklistAccessToken = require("../../redis/blocklist-access-token");
-const { InvalidArgumentError } = require("../erros");
+const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
+const moment = require('moment');
+
+const { InvalidArgumentError } = require('../erros');
+
+const allowlistRefreshToken = require('../../redis/allowlist-refresh-token');
+const blocklistAccessToken = require('../../redis/blocklist-access-token');
 
 function criaTokenJWT(id, [tempoQuantidade, tempoUnidade]) {
-  const payload = {
-    id,
-  };
-
+  const payload = { id };
   const token = jwt.sign(payload, process.env.CHAVE_JWT, {
     expiresIn: tempoQuantidade + tempoUnidade,
   });
@@ -23,9 +22,10 @@ async function verificaTokenJWT(token, nome, blocklist) {
 }
 
 async function verificaTokenNaBlocklist(token, nome, blocklist) {
-  if(!blocklist) {
-    return
+  if (!blocklist) {
+    return;
   }
+
   const tokenNaBlocklist = await blocklist.contemToken(token);
   if (tokenNaBlocklist) {
     throw new jwt.JsonWebTokenError(`${nome} inválido por logout!`);
@@ -37,7 +37,7 @@ function invalidaTokenJWT(token, blocklist) {
 }
 
 async function criaTokenOpaco(id, [tempoQuantidade, tempoUnidade], allowlist) {
-  const tokenOpaco = crypto.randomBytes(24).toString("hex");
+  const tokenOpaco = crypto.randomBytes(24).toString('hex');
   const dataExpiracao = moment().add(tempoQuantidade, tempoUnidade).unix();
   await allowlist.adiciona(tokenOpaco, id, dataExpiracao);
   return tokenOpaco;
@@ -66,11 +66,12 @@ function verificaTokenEnviado(token, nome) {
   }
 }
 
+
 module.exports = {
   access: {
-    nome: "access token",
+    nome: 'access token',
     lista: blocklistAccessToken,
-    expiracao: [15, "m"],
+    expiracao: [15, 'm'],
     cria(id) {
       return criaTokenJWT(id, this.expiracao);
     },
@@ -79,12 +80,12 @@ module.exports = {
     },
     invalida(token) {
       return invalidaTokenJWT(token, this.lista);
-    },
+    }
   },
   refresh: {
-    nome: "refresh token",
+    nome: 'refresh token',
     lista: allowlistRefreshToken,
-    expiracao: [5, "d"],
+    expiracao: [5, 'd'],
     cria(id) {
       return criaTokenOpaco(id, this.expiracao, this.lista);
     },
@@ -93,16 +94,16 @@ module.exports = {
     },
     invalida(token) {
       return invalidaTokenOpaco(token, this.lista);
-    },
+    }
   },
   verificacaoEmail: {
     nome: 'token de verificação de e-mail',
     expiracao: [1, 'h'],
     cria(id) {
-      return criaTokenJWT(id, this.expiracao)
+      return criaTokenJWT(id, this.expiracao);
     },
     verifica(token) {
-      return verificaTokenJWT(token, this.nome)
+      return verificaTokenJWT(token, this.nome);
     }
   }
 };
